@@ -1,7 +1,6 @@
 import pandas as pd
+import numpy as np
 import re
-
-
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import Model
@@ -29,7 +28,7 @@ def clean_text(text):
 
 def load_news():
     print("Loading news data")
-    news = pd.read_csv("out/nyt_combined.csv")
+    news = pd.read_csv("out/nyt/2020-01.csv")
     news["date"] = pd.to_datetime(news["date"]).dt.date
 
     news["headline"] = news["headline"].astype(str).apply(clean_text)
@@ -147,6 +146,15 @@ def main():
     model.compile(optimizer=Adam(), loss="binary_crossentropy", metrics=["accuracy"])
 
     model.summary()
+
+    padded_list = padded.tolist() if isinstance(padded, np.ndarray) else padded
+
+    news_df = pd.DataFrame({"date": news["date"].tolist(), "padded_text": padded_list})
+
+    grouped = news_df.groupby("date")["padded_text"].apply(
+        lambda x: np.mean(np.vstack(x), axis=0).tolist()
+    )
+    aggregated = pd.DataFrame(grouped).reset_index()
 
 
 if __name__ == "__main__":
