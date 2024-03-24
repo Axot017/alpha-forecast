@@ -1,17 +1,35 @@
-let pkgs = import <nixpkgs> { config = { allowUnfree = true; }; };
-in pkgs.mkShell {
+with import <nixpkgs> { config = { allowUnfree = true; }; };
+with pkgs.python3Packages;
+let
+  keras = buildPythonPackage rec {
+    pname = "keras";
+    version = "2.13.1";
+    src = fetchPypi {
+      inherit pname version;
+      sha256 = "sha256-XfEswkGgFaEbZd20UsDusnRPziHZtUukjbh0klaMzGg=";
+    };
+    doCheck = false;
+    propagatedBuildInputs = [ setuptools ];
+    buildInputs = [ python3 ];
+  };
+in mkShell {
   packages = [
-    (pkgs.python3.withPackages (python-pkgs: [
-      python-pkgs.numpy
-      python-pkgs.pandas
-      python-pkgs.requests
-      python-pkgs.selenium
-      python-pkgs.beautifulsoup4
-      python-pkgs.python-dotenv
-    ]))
-    pkgs.chromedriver
-    pkgs.google-chrome
-    (pkgs.writeShellScriptBin "chrome"
+    (python3.withPackages (python-pkgs:
+      with python-pkgs; [
+        pip
+        numpy
+        pandas
+        requests
+        selenium
+        beautifulsoup4
+        python-dotenv
+        keras
+        tensorflow
+        scikit-learn
+      ]))
+    chromedriver
+    google-chrome
+    (writeShellScriptBin "chrome"
       "exec -a $0 ${pkgs.google-chrome}/bin/google-chrome-stable $@")
 
   ];
