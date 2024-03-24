@@ -28,6 +28,9 @@ def extract_relevant_info(articles):
         headline = article["abstract"]
         lead_paragraph = article["lead_paragraph"]
         date = article["pub_date"]
+        if not headline or not lead_paragraph or not date:
+            continue
+
         yield {"date": date, "headline": headline, "lead_paragraph": lead_paragraph}
 
 
